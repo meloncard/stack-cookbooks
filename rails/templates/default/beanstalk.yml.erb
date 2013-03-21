@@ -1,0 +1,11 @@
+<% (['development', 'production'] + [@environment]).uniq.each do |env| -%>
+<%= env %>:
+  basic:
+    client: <%= @queue[:ip] %>
+    port: <%= @queue[:port] %>
+  work:
+    client: <%= @work[:ip] %>
+    port: <%= @queue[:port] %>
+  beanstalk: true
+
+<% end -%>

@@ -1,0 +1,5 @@
+<% (['development', 'production'] + [@environment]).uniq.each do |env| -%>
+<%= env %>:
+  MERCHANT_API_KEY: <%= @merchant_api_key %>
+
+<% end -%>
