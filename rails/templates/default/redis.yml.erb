@@ -2,7 +2,7 @@
 <%= env %>:
   session:
     redis: true
-    client: <%= @session[:ip] %>
+    client: <%= @session[:host] %>
     port: <%= @session[:port] %>
   cache:
     redis: false

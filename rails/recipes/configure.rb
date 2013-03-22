@@ -26,6 +26,8 @@ node[:deploy].each do |application, deploy|
     end
   end
 
+  beanstalk_server = node[:opsworks][:layers][:beanstalk][:instances].keys.first rescue nil
+
   # We're going to add a Beanstalk.yml config - HGH
   template "#{deploy[:deploy_to]}/shared/config/beanstalk.yml" do
     source "beanstalk.yml.erb"
@@ -33,8 +35,8 @@ node[:deploy].each do |application, deploy|
     mode "0660"
     group deploy[:group]
     owner deploy[:user]
-    variables(:queue => { :ip => "127.0.0.1", :port => 11300 },
-              :work => { :ip => "127.0.0.1", :port => 11301 }, 
+    variables(:queue => { :host => node[:opsworks][:layers][:redis][:instances][beanstalk_server][:private_dns_name], :port => 11300 },
+              :work => { :host => node[:opsworks][:layers][:redis][:instances][beanstalk_server][:private_dns_name], :port => 11301 }, 
               :environment => deploy[:rails_env])
 
     notifies :run, resources(:execute => "restart Rails app #{application}")
@@ -61,20 +63,24 @@ node[:deploy].each do |application, deploy|
       end
     end
   end
-  
-  # Then redis.yml - HGH
-  template "#{deploy[:deploy_to]}/shared/config/redis.yml" do
-    source "redis.yml.erb"
-    cookbook 'rails'
-    mode "0660"
-    group deploy[:group]
-    owner deploy[:user]
-    variables(:session => { :ip => "127.0.0.1", :port => 6379 }, :environment => deploy[:rails_env])
-    
-    notifies :run, resources(:execute => "restart Rails app #{application}")
 
-    only_if do
-      File.exists?("#{deploy[:deploy_to]}") && File.exists?("#{deploy[:deploy_to]}/shared/config/")
+  redis_server = node[:opsworks][:layers][:redis][:instances].keys.first rescue nil
+
+  # Then redis.yml - HGH
+  if redis_server
+    template "#{deploy[:deploy_to]}/shared/config/redis.yml" do
+      source "redis.yml.erb"
+      cookbook 'rails'
+      mode "0660"
+      group deploy[:group]
+      owner deploy[:user]
+      variables(:session => { :host => node[:opsworks][:layers][:redis][:instances][redis_server][:private_dns_name], :port => 6379 }, :environment => deploy[:rails_env])
+      
+      notifies :run, resources(:execute => "restart Rails app #{application}")
+
+      only_if do
+        File.exists?("#{deploy[:deploy_to]}") && File.exists?("#{deploy[:deploy_to]}/shared/config/")
+      end
     end
   end
 
@@ -117,8 +123,6 @@ node[:deploy].each do |application, deploy|
         File.exists?("#{deploy[:deploy_to]}") && File.exists?("#{deploy[:deploy_to]}/shared/keys/")
       end
     end
-
-
   end
 
   if deploy[:memcached] # This will be optional - HGH
