@@ -81,7 +81,7 @@ node[:deploy].each do |application, deploy|
     directory "#{deploy[:deploy_to]}/shared/keys" do
       group deploy[:group]
       owner deploy[:user]
-      mode 00644
+      mode "0770"
       action :create
 
       only_if do
