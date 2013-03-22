@@ -76,6 +76,49 @@ node[:deploy].each do |application, deploy|
     end
   end
 
+  # Lets add public/private pem's, if supplied - HGH
+  if deploy[:keys]
+    directory "#{deploy[:deploy_to]}/shared/keys" do
+      group deploy[:group]
+      owner deploy[:user]
+      mode 00644
+      action :create
+
+      only_if do
+        File.exists?("#{deploy[:deploy_to]}") && File.exists?("#{deploy[:deploy_to]}/shared")
+      end
+    end
+
+    # This kind of stuff is going to have to be in the custom JSON - HGH
+    file "#{deploy[:deploy_to]}/shared/keys/public.pem" do
+      content deploy[:keys][:public]
+      mode "0660"
+      group deploy[:group]
+      owner deploy[:user]
+
+      notifies :run, resources(:execute => "restart Rails app #{application}")
+
+      only_if do
+        File.exists?("#{deploy[:deploy_to]}") && File.exists?("#{deploy[:deploy_to]}/shared/keys/")
+      end
+    end
+
+    file "#{deploy[:deploy_to]}/shared/keys/private.pem" do
+      content deploy[:keys][:private]
+      mode "0660"
+      group deploy[:group]
+      owner deploy[:user]
+
+      notifies :run, resources(:execute => "restart Rails app #{application}")
+
+      only_if do
+        File.exists?("#{deploy[:deploy_to]}") && File.exists?("#{deploy[:deploy_to]}/shared/keys/")
+      end
+    end
+
+
+  end
+
   if deploy[:memcached] # This will be optional - HGH
     template "#{deploy[:deploy_to]}/shared/config/memcached.yml" do
       source "memcached.yml.erb"
