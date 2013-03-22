@@ -45,21 +45,23 @@ node[:deploy].each do |application, deploy|
   end
 
   # We're going to add a Merchant.yml config - HGH
-  template "#{deploy[:deploy_to]}/shared/config/merchant.yml" do
-    source "merchant.yml.erb"
-    cookbook 'rails'
-    mode "0660"
-    group deploy[:group]
-    owner deploy[:user]
-    variables(:merchant_api_key => 'xxx', :environment => deploy[:rails_env])
-    
-    notifies :run, resources(:execute => "restart Rails app #{application}")
+  if deploy['merchant']
+    template "#{deploy[:deploy_to]}/shared/config/merchant.yml" do
+      source "merchant.yml.erb"
+      cookbook 'rails'
+      mode "0660"
+      group deploy[:group]
+      owner deploy[:user]
+      variables(:merchant_api_key => deploy['merchant'], :environment => deploy[:rails_env])
+      
+      notifies :run, resources(:execute => "restart Rails app #{application}")
 
-    only_if do
-      File.exists?("#{deploy[:deploy_to]}") && File.exists?("#{deploy[:deploy_to]}/shared/config/")
+      only_if do
+        File.exists?("#{deploy[:deploy_to]}") && File.exists?("#{deploy[:deploy_to]}/shared/config/")
+      end
     end
   end
-
+  
   # Then redis.yml - HGH
   template "#{deploy[:deploy_to]}/shared/config/redis.yml" do
     source "redis.yml.erb"
