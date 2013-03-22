@@ -35,8 +35,8 @@ node[:deploy].each do |application, deploy|
     mode "0660"
     group deploy[:group]
     owner deploy[:user]
-    variables(:queue => { :host => node[:opsworks][:layers][:redis][:instances][beanstalk_server][:private_dns_name], :port => 11300 },
-              :work => { :host => node[:opsworks][:layers][:redis][:instances][beanstalk_server][:private_dns_name], :port => 11301 }, 
+    variables(:queue => { :host => node[:opsworks][:layers][:beanstalk][:instances][beanstalk_server][:private_dns_name], :port => 11300 },
+              :work => { :host => node[:opsworks][:layers][:beanstalk][:instances][beanstalk_server][:private_dns_name], :port => 11301 }, 
               :environment => deploy[:rails_env])
 
     notifies :run, resources(:execute => "restart Rails app #{application}")
