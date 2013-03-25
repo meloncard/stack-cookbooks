@@ -31,6 +31,12 @@ server {
     deny all;
   }
 
+  location ~ ^/(assets)/  {
+    gzip_static on; # to serve pre-gzipped version
+    expires max;
+    add_header Cache-Control public;
+  }
+
   error_page 500 502 503 504 /500.html;
   location = /500.html {
     root <%= @application[:absolute_document_root] %>;
@@ -66,6 +72,12 @@ server {
       proxy_pass http://unicorn_<%= @application[:domains].first %>;
       break;
     }
+  }
+
+  location ~ ^/(assets)/  {
+    gzip_static on; # to serve pre-gzipped version
+    expires max;
+    add_header Cache-Control public;
   }
 
   error_page 500 502 503 504 /500.html;
