@@ -8,4 +8,11 @@ server {
     root   /var/www/nginx-default;
     index  index.html index.htm;
   }
+
+  location ~ ^/(assets)/  {
+    root /path/to/public;
+    gzip_static on; # to serve pre-gzipped version
+    expires max;
+    add_header Cache-Control public;
+  }
 }
