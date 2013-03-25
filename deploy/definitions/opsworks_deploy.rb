@@ -94,8 +94,6 @@ define :opsworks_deploy do
       # We're going to precompile assets here
       before_restart do
         if deploy[:application_type] == 'rails'
-          Chef::Log.info("Symlinking #{release_path}/public/assets to #{new_resource.deploy_to}/shared/assets")
-          
           rails_env = new_resource.environment["RAILS_ENV"]
           Chef::Log.info("Precompiling assets for RAILS_ENV=#{rails_env}...")
           
