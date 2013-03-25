@@ -92,23 +92,25 @@ define :opsworks_deploy do
 
       # Copy in from symlink for assets -HGH
       # We're going to precompile assets here
-      if deploy[:application_type] == 'rails'
-        Chef::Log.info("Symlinking #{release_path}/public/assets to #{new_resource.deploy_to}/shared/assets")
-        
-        link "#{release_path}/public/assets" do
-          to "#{new_resource.deploy_to}/shared/assets"
-        end
-         
-        rails_env = new_resource.environment["RAILS_ENV"]
-        Chef::Log.info("Precompiling assets for RAILS_ENV=#{rails_env}...")
-         
-        execute "rake assets:precompile" do
-          cwd release_path
-          command "bundle exec rake assets:precompile"
-          environment "RAILS_ENV" => rails_env
+      before_restart do
+        if deploy[:application_type] == 'rails'
+          Chef::Log.info("Symlinking #{release_path}/public/assets to #{new_resource.deploy_to}/shared/assets")
+          
+          link "#{release_path}/public/assets" do
+            to "#{new_resource.deploy_to}/shared/assets"
+          end
+           
+          rails_env = new_resource.environment["RAILS_ENV"]
+          Chef::Log.info("Precompiling assets for RAILS_ENV=#{rails_env}...")
+           
+          execute "rake assets:precompile" do
+            cwd release_path
+            command "bundle exec rake assets:precompile"
+            environment "RAILS_ENV" => rails_env
+          end
         end
       end
-
+      
       before_migrate do
         link_tempfiles_to_current_release
 
