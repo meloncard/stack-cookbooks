@@ -102,7 +102,19 @@ define :opsworks_deploy do
            
           rails_env = new_resource.environment["RAILS_ENV"]
           Chef::Log.info("Precompiling assets for RAILS_ENV=#{rails_env}...")
-           
+          
+          execute "show beanstalk" do
+            cwd release_path
+            command "cat config/beanstalk.yml"
+            environment "RAILS_ENV" => rails_env
+          end
+
+          execute "show env" do
+            cwd release_path
+            command "echo $RAILS_ENV"
+            environment "RAILS_ENV" => rails_env
+          end
+          
           execute "rake assets:precompile" do
             cwd release_path
             command "bundle exec rake assets:precompile"
@@ -110,7 +122,7 @@ define :opsworks_deploy do
           end
         end
       end
-      
+
       before_migrate do
         link_tempfiles_to_current_release
 
