@@ -116,22 +116,6 @@ define :opsworks_deploy do
               :environment => node[:deploy][application][:rails_env]
             )
           end.run_action(:create)
-
-          # Copy in from symlink for assets -HGH
-          Chef::Log.info("Symlinking #{release_path}/public/assets to #{new_resource.deploy_to}/shared/assets")
-   
-          link "#{release_path}/public/assets" do
-            to "#{new_resource.deploy_to}/shared/assets"
-          end
-           
-          rails_env = new_resource.environment["RAILS_ENV"]
-          Chef::Log.info("Precompiling assets for RAILS_ENV=#{rails_env}...")
-           
-          execute "rake assets:precompile" do
-            cwd release_path
-            command "bundle exec rake assets:precompile"
-            environment "RAILS_ENV" => rails_env
-          end
         elsif deploy[:application_type] == 'php'
           template "#{node[:deploy][application][:deploy_to]}/shared/config/opsworks.php" do
             cookbook 'php'
@@ -163,6 +147,25 @@ define :opsworks_deploy do
   ruby_block "change HOME back to /root after source checkout" do
     block do
       ENV['HOME'] = "/root"
+    end
+  end
+
+  # Copy in from symlink for assets -HGH
+  # We're going to precompile assets here
+  if deploy[:application_type] == 'rails'
+    Chef::Log.info("Symlinking #{release_path}/public/assets to #{new_resource.deploy_to}/shared/assets")
+    
+    link "#{release_path}/public/assets" do
+      to "#{new_resource.deploy_to}/shared/assets"
+    end
+     
+    rails_env = new_resource.environment["RAILS_ENV"]
+    Chef::Log.info("Precompiling assets for RAILS_ENV=#{rails_env}...")
+     
+    execute "rake assets:precompile" do
+      cwd release_path
+      command "bundle exec rake assets:precompile"
+      environment "RAILS_ENV" => rails_env
     end
   end
 
