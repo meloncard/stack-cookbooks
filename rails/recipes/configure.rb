@@ -44,7 +44,7 @@ node[:deploy].each do |application, deploy|
     group deploy[:group]
     owner deploy[:user]
     variables(:client => beanstalk_client,
-              :port => 11300
+              :port => 11300,
               :environment => deploy[:rails_env])
 
     notifies :run, resources(:execute => "restart Rails app #{application}")
