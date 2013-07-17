@@ -27,27 +27,33 @@ node[:deploy].each do |application, deploy|
   end
 
   beanstalkd_server = node[:opsworks][:layers][:beanstalkd][:instances].keys.first rescue nil
+  beanstalk_client = nil
 
-  # We're going to add a Beanstalk.yml config - HGH
+  # Require a beanstalk server or config
   if beanstalkd_server
-    template "#{deploy[:deploy_to]}/shared/config/beanstalk.yml" do
-      source "beanstalk.yml.erb"
-      cookbook 'rails'
-      mode "0660"
-      group deploy[:group]
-      owner deploy[:user]
-      variables(:queue => { :host => node[:opsworks][:layers][:beanstalkd][:instances][beanstalkd_server][:private_dns_name], :port => 11300 },
-                :work => { :host => node[:opsworks][:layers][:beanstalkd][:instances][beanstalkd_server][:private_dns_name], :port => 11301 }, 
-                :environment => deploy[:rails_env])
-
-      notifies :run, resources(:execute => "restart Rails app #{application}")
-
-      only_if do
-        File.exists?("#{deploy[:deploy_to]}") && File.exists?("#{deploy[:deploy_to]}/shared/config/")
-      end
-    end
+    beanstalk_client = node[:opsworks][:layers][:beanstalkd][:instances][beanstalkd_server][:private_dns_name]
+  else
+    beanstalk_client = deploy[:beanstalk][:client]
   end
 
+  # We're going to add a Beanstalk.yml config - HGH
+  template "#{deploy[:deploy_to]}/shared/config/beanstalk.yml" do
+    source "beanstalk.yml.erb"
+    cookbook 'rails'
+    mode "0660"
+    group deploy[:group]
+    owner deploy[:user]
+    variables(:client => beanstalk_client,
+              :port => 11300
+              :environment => deploy[:rails_env])
+
+    notifies :run, resources(:execute => "restart Rails app #{application}")
+
+    only_if do
+      File.exists?("#{deploy[:deploy_to]}") && File.exists?("#{deploy[:deploy_to]}/shared/config/")
+    end
+  end
+  
   # We're going to add a Merchant.yml config - HGH
   if deploy['merchant']
     template "#{deploy[:deploy_to]}/shared/config/merchant.yml" do
@@ -67,25 +73,31 @@ node[:deploy].each do |application, deploy|
   end
 
   redis_server = node[:opsworks][:layers][:redis][:instances].keys.first rescue nil
+  redis_client = nil
 
-  # Then redis.yml - HGH
+  # Require a beanstalk server or config
   if redis_server
-    template "#{deploy[:deploy_to]}/shared/config/redis.yml" do
-      source "redis.yml.erb"
-      cookbook 'rails'
-      mode "0660"
-      group deploy[:group]
-      owner deploy[:user]
-      variables(:session => { :host => node[:opsworks][:layers][:redis][:instances][redis_server][:private_dns_name], :port => 6379 }, :environment => deploy[:rails_env])
-      
-      notifies :run, resources(:execute => "restart Rails app #{application}")
-
-      only_if do
-        File.exists?("#{deploy[:deploy_to]}") && File.exists?("#{deploy[:deploy_to]}/shared/config/")
-      end
-    end
+    redis_client = node[:opsworks][:layers][:redis][:instances][redis_server][:private_dns_name]
+  else
+    redis_client = deploy[:beanstalk][:client]
   end
 
+  # Then redis.yml - HGH
+  template "#{deploy[:deploy_to]}/shared/config/redis.yml" do
+    source "redis.yml.erb"
+    cookbook 'rails'
+    mode "0660"
+    group deploy[:group]
+    owner deploy[:user]
+    variables(:session => { :host => redis_client, :port => 6379 }, :environment => deploy[:rails_env])
+    
+    notifies :run, resources(:execute => "restart Rails app #{application}")
+
+    only_if do
+      File.exists?("#{deploy[:deploy_to]}") && File.exists?("#{deploy[:deploy_to]}/shared/config/")
+    end
+  end
+  
   # Lets add public/private pem's, if supplied - HGH
   if deploy[:keys]
     directory "#{deploy[:deploy_to]}/shared/keys" do
