@@ -34,8 +34,8 @@ node[:deploy].each do |application, deploy|
 
   service "unicorn_#{application}" do
     start_command "#{deploy[:deploy_to]}/shared/scripts/unicorn start"
-    stop_command "sudo #{deploy[:deploy_to]}/shared/scripts/unicorn stop"
-    restart_command "sudo #{deploy[:deploy_to]}/shared/scripts/unicorn restart"
+    stop_command "#{deploy[:deploy_to]}/shared/scripts/unicorn stop"
+    restart_command "#{deploy[:deploy_to]}/shared/scripts/unicorn restart"
     status_command "#{deploy[:deploy_to]}/shared/scripts/unicorn status"
     action :nothing
   end
