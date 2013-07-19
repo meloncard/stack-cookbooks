@@ -43,8 +43,6 @@ define :opsworks_deploy do
     end
   end
 
-  Chef::Log.debug("Checking out source code of application #{application} with type #{deploy[:application_type]}")
-
   directory "#{deploy[:deploy_to]}/shared/cached-copy" do
     recursive true
     action :delete
@@ -60,7 +58,8 @@ define :opsworks_deploy do
   end
 
   # setup deployment & checkout
-  if deploy[:scm]
+  if deploy[:scm] && deploy[:scm][:scm_type] != 'other'
+    Chef::Log.debug("Checking out source code of application #{application} with type #{deploy[:application_type]}")
     deploy deploy[:deploy_to] do
       repository deploy[:scm][:repository]
       user deploy[:user]
@@ -141,7 +140,8 @@ define :opsworks_deploy do
             variables(
               :database => node[:deploy][application][:database],
               :memcached => node[:deploy][application][:memcached],
-              :layers => node[:opsworks][:layers]
+              :layers => node[:opsworks][:layers],
+              :stack_name => node[:opsworks][:stack][:name]
             )
             only_if do
               File.exists?("#{node[:deploy][application][:deploy_to]}/shared/config")
