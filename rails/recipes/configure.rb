@@ -46,7 +46,7 @@ node[:deploy].each do |application, deploy|
     variables(:client => beanstalk_client,
               :port => 11300,
               :environment => deploy[:rails_env])
-
+    
     notifies :run, resources(:execute => "restart Rails app #{application}")
 
     only_if do
