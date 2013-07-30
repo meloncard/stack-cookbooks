@@ -6,7 +6,8 @@ execute 'Load device mapper kernel module' do
   ignore_failure true
 end
 
-node[:ebs][:raids].each do |raid_device, options|
+node.default[:ebs][:raids].each do |raid_device, options|
+  Chef::Log.info "Processing RAID #{raid_device} with options #{options} "
   lvm_device = BlockDevice.lvm_device(raid_device)
 
   Chef::Log.info("Waiting for individual disks of RAID #{options[:mount_point]}")
@@ -23,8 +24,7 @@ node[:ebs][:raids].each do |raid_device, options|
           BlockDevice.assemble_raid(raid_device, options)
         end
       else
-        BlockDevice.create_raid(raid_device, options.update(
-          :chunk_size => node[:ebs][:mdadm_chunk_size]))
+        BlockDevice.create_raid(raid_device, options.update(:chunk_size => node[:ebs][:mdadm_chunk_size]))
       end
       BlockDevice.set_read_ahead(raid_device, node[:ebs][:md_read_ahead])
     end
@@ -86,7 +86,11 @@ node[:ebs][:raids].each do |raid_device, options|
     group 'root'
   end
 
-  template '/etc/rc.local' do
+  template 'rc.local script' do
+    path value_for_platform(
+      ['centos','redhat','fedora','amazon'] => {'default' => '/etc/rc.d/rc.local'},
+      'default' => '/etc/rc.local'
+    )
     source 'rc.local.erb'
     mode 0755
     owner 'root'

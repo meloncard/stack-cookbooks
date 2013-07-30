@@ -3,26 +3,12 @@ define :passenger_web_app do
   deploy = params[:deploy]
   application = params[:application]
 
-  ruby_block 'Determine Passenger application type' do
-    inner_deploy = deploy
-    inner_application = application
-    block do
-      inner_deploy[:passenger_handler] = if File.exists?("#{inner_deploy[:deploy_to]}/current/config.ru")
-        Chef::Log.info("Looks like #{inner_application} is a Rack application")
-        "Rack"
-      else
-        Chef::Log.info("No config.ru found, assuming #{inner_application} is a Rails application")
-        "Rails"
-      end
-    end
-  end
-
   template "#{node[:apache][:dir]}/ssl/#{deploy[:domains].first}.crt" do
     cookbook 'passenger_apache2'
     mode '0600'
     source "ssl.key.erb"
     variables :key => deploy[:ssl_certificate]
-    notifies :restart, resources(:service => "apache2")
+    notifies :restart, "service[apache2]"
     only_if do
       deploy[:ssl_support]
     end
@@ -33,7 +19,7 @@ define :passenger_web_app do
     mode '0600'
     source "ssl.key.erb"
     variables :key => deploy[:ssl_certificate_key]
-    notifies :restart, resources(:service => "apache2")
+    notifies :restart, "service[apache2]"
     only_if do
       deploy[:ssl_support]
     end
@@ -44,7 +30,7 @@ define :passenger_web_app do
     mode '0600'
     source "ssl.key.erb"
     variables :key => deploy[:ssl_certificate_ca]
-    notifies :restart, resources(:service => "apache2")
+    notifies :restart, "service[apache2]"
     only_if do
       deploy[:ssl_support] && deploy[:ssl_certificate_ca]
     end

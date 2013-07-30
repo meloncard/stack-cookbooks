@@ -53,6 +53,8 @@ end
 
 default[:mysql][:ec2_path]                 = '/mnt/mysql'
 default[:mysql][:opsworks_autofs_map_file] = '/etc/auto.opsworks'
+default[:mysql][:autofs_options] = "-fstype=none,bind,rw"
+default[:mysql][:autofs_entry] = "#{node[:mysql][:datadir]} #{node[:mysql][:autofs_options]} :#{node[:mysql][:ec2_path]}"
 
 # Tunables
 
