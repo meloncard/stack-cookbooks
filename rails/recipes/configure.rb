@@ -11,7 +11,8 @@ node[:deploy].each do |application, deploy|
     action :nothing
   end
 
-  node[:deploy][application][:database][:adapter] = OpsWorks::RailsConfiguration.determine_database_adapter(application, node[:deploy][application], "#{node[:deploy][application][:deploy_to]}/current", :force => node[:force_database_adapter_detection])
+  node.default[:deploy][application][:database][:adapter] = OpsWorks::RailsConfiguration.determine_database_adapter(application, node[:deploy][application], "#{node[:deploy][application][:deploy_to]}/current", :force => node[:force_database_adapter_detection])
+  deploy = node[:deploy][application]
 
   template "#{deploy[:deploy_to]}/shared/config/database.yml" do
     source "database.yml.erb"
@@ -21,7 +22,7 @@ node[:deploy].each do |application, deploy|
     owner deploy[:user]
     variables(:database => deploy[:database], :environment => deploy[:rails_env])
 
-    notifies :run, resources(:execute => "restart Rails app #{application}")
+    notifies :run, "execute[restart Rails app #{application}]"
 
     only_if do
       File.exists?("#{deploy[:deploy_to]}") && File.exists?("#{deploy[:deploy_to]}/shared/config/")
@@ -49,7 +50,7 @@ node[:deploy].each do |application, deploy|
               :port => 11300,
               :environment => deploy[:rails_env])
     
-    notifies :run, resources(:execute => "restart Rails app #{application}")
+    notifies :run, "execute[restart Rails app #{application}]"
 
     only_if do
       File.exists?("#{deploy[:deploy_to]}") && File.exists?("#{deploy[:deploy_to]}/shared/config/")
@@ -66,8 +67,8 @@ node[:deploy].each do |application, deploy|
       owner deploy[:user]
       variables(:merchant_api_key => deploy['merchant'], :environment => deploy[:rails_env])
       
-      notifies :run, resources(:execute => "restart Rails app #{application}")
-
+      notifies :run, "execute[restart Rails app #{application}]"
+      
       only_if do
         File.exists?("#{deploy[:deploy_to]}") && File.exists?("#{deploy[:deploy_to]}/shared/config/")
       end
@@ -93,7 +94,7 @@ node[:deploy].each do |application, deploy|
     owner deploy[:user]
     variables(:session => { :host => redis_client, :port => 6379 }, :environment => deploy[:rails_env])
     
-    notifies :run, resources(:execute => "restart Rails app #{application}")
+    notifies :run, "execute[restart Rails app #{application}]"
 
     only_if do
       File.exists?("#{deploy[:deploy_to]}") && File.exists?("#{deploy[:deploy_to]}/shared/config/")
@@ -120,7 +121,7 @@ node[:deploy].each do |application, deploy|
       group deploy[:group]
       owner deploy[:user]
 
-      notifies :run, resources(:execute => "restart Rails app #{application}")
+      notifies :run, "execute[restart Rails app #{application}]"
 
       only_if do
         File.exists?("#{deploy[:deploy_to]}") && File.exists?("#{deploy[:deploy_to]}/shared/keys/")
@@ -133,7 +134,7 @@ node[:deploy].each do |application, deploy|
       group deploy[:group]
       owner deploy[:user]
 
-      notifies :run, resources(:execute => "restart Rails app #{application}")
+      notifies :run, "execute[restart Rails app #{application}]"
 
       only_if do
         File.exists?("#{deploy[:deploy_to]}") && File.exists?("#{deploy[:deploy_to]}/shared/keys/")
@@ -150,7 +151,7 @@ node[:deploy].each do |application, deploy|
       owner deploy[:user]
       variables(:memcached => deploy[:memcached], :environment => deploy[:rails_env])
 
-      notifies :run, resources(:execute => "restart Rails app #{application}")
+      notifies :run, "execute[restart Rails app #{application}]"
 
       only_if do
         File.exists?("#{deploy[:deploy_to]}") && File.exists?("#{deploy[:deploy_to]}/shared/config/")

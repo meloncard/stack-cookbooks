@@ -37,13 +37,19 @@ service 'apache2' do
   action :enable
 end
 
+if platform?("debian","ubuntu")
+  execute "reset permission of #{node[:apache][:log_dir]}" do
+    command "chmod 0755 #{node[:apache][:log_dir]}"
+  end
+end
+
 if platform?('centos', 'redhat', 'fedora', 'amazon')
   directory node[:apache][:log_dir] do
     mode 0755
     action :create
   end
 
-  remote_file '/usr/local/bin/apache2_module_conf_generate.pl' do
+  cookbook_file '/usr/local/bin/apache2_module_conf_generate.pl' do
     source 'apache2_module_conf_generate.pl'
     mode 0755
     owner 'root'
@@ -114,7 +120,7 @@ template 'apache2.conf' do
   owner 'root'
   group 'root'
   mode 0644
-  notifies :restart, resources(:service => 'apache2')
+  notifies :restart, "service[apache2]"
 end
 
 template 'security' do
@@ -124,7 +130,7 @@ template 'security' do
   group 'root'
   mode 0644
   backup false
-  notifies :restart, resources(:service => 'apache2')
+  notifies :restart, "service[apache2]"
 end
 
 template 'charset' do
@@ -134,7 +140,7 @@ template 'charset' do
   group 'root'
   mode 0644
   backup false
-  notifies :restart, resources(:service => 'apache2')
+  notifies :restart, "service[apache2]"
 end
 
 template "#{node[:apache][:dir]}/ports.conf" do
@@ -142,7 +148,7 @@ template "#{node[:apache][:dir]}/ports.conf" do
   group 'root'
   owner 'root'
   mode 0644
-  notifies :restart, resources(:service => 'apache2')
+  notifies :restart, "service[apache2]"
 end
 
 template "#{node[:apache][:dir]}/sites-available/default" do
@@ -150,7 +156,7 @@ template "#{node[:apache][:dir]}/sites-available/default" do
   owner 'root'
   group 'root'
   mode 0644
-  notifies :restart, resources(:service => 'apache2')
+  notifies :restart, "service[apache2]"
 end
 
 include_recipe 'apache2::mod_status'

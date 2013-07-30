@@ -30,18 +30,20 @@ define :opsworks_deploy do
 
     if deploy[:scm][:scm_type].to_s == 'archive'
       repository = prepare_archive_checkouts(deploy[:scm])
-      deploy[:scm] = {
+      node.set[:deploy][application][:scm] = {
         :scm_type => 'git',
         :repository => repository
       }
     elsif deploy[:scm][:scm_type].to_s == 's3'
       repository = prepare_s3_checkouts(deploy[:scm])
-      deploy[:scm] = {
+      node.set[:deploy][application][:scm] = {
         :scm_type => 'git',
         :repository => repository
       }
     end
   end
+
+  deploy = node[:deploy][application]
 
   directory "#{deploy[:deploy_to]}/shared/cached-copy" do
     recursive true
@@ -63,10 +65,11 @@ define :opsworks_deploy do
     deploy deploy[:deploy_to] do
       repository deploy[:scm][:repository]
       user deploy[:user]
+      group deploy[:group]
       revision deploy[:scm][:revision]
       migrate deploy[:migrate]
       migration_command deploy[:migrate_command]
-      environment deploy[:environment]
+      environment deploy[:environment].to_hash
       symlink_before_migrate( deploy[:symlink_before_migrate] )
       action deploy[:action]
 
@@ -112,7 +115,7 @@ define :opsworks_deploy do
             OpsWorks::RailsConfiguration.bundle(application, node[:deploy][application], release_path)
           end
 
-          node[:deploy][application][:database][:adapter] = OpsWorks::RailsConfiguration.determine_database_adapter(
+          node.default[:deploy][application][:database][:adapter] = OpsWorks::RailsConfiguration.determine_database_adapter(
             application,
             node[:deploy][application],
             release_path,

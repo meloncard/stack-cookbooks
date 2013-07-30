@@ -1,4 +1,6 @@
-Alias <%= node[:ganglia][:web][:url] %> /usr/share/ganglia-webfrontend
+DirectoryIndex <%= node[:ganglia][:web][:welcome_page] %>
+
+Alias <%= node[:ganglia][:web][:url] %> <%= node[:ganglia][:web][:destdir] %>
 
 <Location '<%= node[:ganglia][:web][:url] %>' >
   AuthUserFile /etc/ganglia-webfrontend/htaccess
