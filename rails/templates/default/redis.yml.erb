@@ -1,5 +1,4 @@
-<% (['development', 'production'] + [@environment]).uniq.each do |env| -%>
-<%= env %>:
+<%= @environment %>:
   session:
     redis: true
     client: <%= @session[:host] %>
@@ -8,5 +7,3 @@
     redis: false
     client: 
     port: 
-
-<% end -%>

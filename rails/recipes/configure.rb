@@ -128,6 +128,7 @@ node[:deploy].each do |application, deploy|
       end
     end
 
+    # TODO: This should only be for workers
     file "#{deploy[:deploy_to]}/shared/keys/private.pem" do
       content deploy[:keys][:private]
       mode "0660"
@@ -138,6 +139,25 @@ node[:deploy].each do |application, deploy|
 
       only_if do
         File.exists?("#{deploy[:deploy_to]}") && File.exists?("#{deploy[:deploy_to]}/shared/keys/")
+      end
+    end
+  end
+
+  # We're going to setup Shadow-Worker.yml
+  # TODO: This should only be for workers
+  if deploy[:worker]
+    template "#{deploy[:deploy_to]}/shared/config/shadow-worker.yml" do
+      source "shadow-worker.yml.erb"
+      cookbook 'rails'
+      mode "0660"
+      group deploy[:group]
+      owner deploy[:user]
+      variables(:worker => deploy['worker'], :environment => deploy[:rails_env])
+      
+      notifies :run, "execute[restart Rails app #{application}]"
+      
+      only_if do
+        File.exists?("#{deploy[:deploy_to]}") && File.exists?("#{deploy[:deploy_to]}/shared/config/")
       end
     end
   end
