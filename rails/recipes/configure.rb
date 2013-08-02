@@ -1,8 +1,12 @@
 include_recipe "deploy"
 
 node[:deploy].each do |application, deploy|
+  Chef::Log("Application: #{application.inspect}")
+  Chef::Log("Deploy: #{deploy.inspect}")
+  Chef::Log("Node: #{node.inspect}")
   deploy = node[:deploy][application]
-
+  Chef::Log("Deploy: #{deploy.inspect}")
+  
   execute "restart Rails app #{application}" do
     cwd deploy[:current_path]
     group deploy[:group]
