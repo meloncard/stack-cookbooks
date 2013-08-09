@@ -16,7 +16,7 @@ if node[:opsworks][:instance][:layers].include?('rails')
   else
     raise "Unknown stack: #{node[:opsworks][:rails_stack][:name].inspect}"
   end
-elsif if node[:opsworks][:instance][:layers].include?('worker')
+elsif node[:opsworks][:instance][:layers].include?('worker')
   Chef::Log.debug('Using worker stack')
   default[:opsworks][:rails_stack][:recipe] = nil
   default[:opsworks][:rails_stack][:needs_reload] = true
