@@ -62,7 +62,7 @@ node[:deploy].each do |application, deploy|
   end
   
   # We're going to add a Merchant.yml config - HGH
-  if deploy['merchant']
+  if deploy['merchant'] && node[:opsworks][:instance][:layers].include?('rails') # This is only for Rails Servers
     template "#{deploy[:deploy_to]}/shared/config/merchant.yml" do
       source "merchant.yml.erb"
       cookbook 'rails'
@@ -132,24 +132,24 @@ node[:deploy].each do |application, deploy|
       end
     end
 
-    # TODO: This should only be for workers
-    file "#{deploy[:deploy_to]}/shared/keys/private.pem" do
-      content deploy[:keys][:private]
-      mode "0660"
-      group deploy[:group]
-      owner deploy[:user]
+    node[:opsworks][:instance][:layers].include?('worker') # This is only for workers
+      file "#{deploy[:deploy_to]}/shared/keys/private.pem" do
+        content deploy[:keys][:private]
+        mode "0660"
+        group deploy[:group]
+        owner deploy[:user]
 
-      notifies :run, "execute[restart Rails app #{application}]"
+        notifies :run, "execute[restart Rails app #{application}]"
 
-      only_if do
-        File.exists?("#{deploy[:deploy_to]}") && File.exists?("#{deploy[:deploy_to]}/shared/keys/")
+        only_if do
+          File.exists?("#{deploy[:deploy_to]}") && File.exists?("#{deploy[:deploy_to]}/shared/keys/")
+        end
       end
     end
   end
 
   # We're going to setup Shadow-Worker.yml
-  # TODO: This should only be for workers
-  if deploy[:worker]
+  if deploy[:worker] && node[:opsworks][:instance][:layers].include?('worker') # This is only for workers
     template "#{deploy[:deploy_to]}/shared/config/shadow-worker.yml" do
       source "shadow-worker.yml.erb"
       cookbook 'rails'

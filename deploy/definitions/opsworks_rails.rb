@@ -1,8 +1,10 @@
 define :opsworks_rails do
   deploy = params[:deploy_data]
   application = params[:app]
-
-  include_recipe node[:opsworks][:rails_stack][:recipe]
+  
+  if node[:opsworks][:instance][:layers].include?('rails') # Only include rails_stack recipe if we're a web app
+    include_recipe node[:opsworks][:rails_stack][:recipe]
+  end
 
   # write out memcached.yml
   template "#{deploy[:deploy_to]}/shared/config/memcached.yml" do

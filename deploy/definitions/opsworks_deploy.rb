@@ -168,7 +168,13 @@ define :opsworks_deploy do
     end
   end
 
-  if deploy[:application_type] == 'rails' && ( node[:opsworks][:instance][:layers].include?('rails-app') || node[:opsworks][:instance][:layers].include?('rails') )
+  Chef::Log.info("Params: #{params.inspect}")
+  Chef::Log.info("Node: #{node.inspect}")
+  Chef::Log.info("Layers: #{node[:opsworks][:instance][:layers]}")
+
+  if deploy[:application_type] == 'rails' && node[:opsworks][:instance][:layers].include?('rails')
+    Chef::Log.info("Running web server")
+    
     case node[:opsworks][:rails_stack][:name]
 
     when 'apache_passenger'
