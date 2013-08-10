@@ -67,7 +67,7 @@ define :opsworks_deploy do
       user deploy[:user]
       group deploy[:group]
       revision deploy[:scm][:revision]
-      migrate deploy[:migrate]
+      migrate true # Always migrate on deploy
       migration_command deploy[:migrate_command]
       environment deploy[:environment].to_hash
       symlink_before_migrate( deploy[:symlink_before_migrate] )
