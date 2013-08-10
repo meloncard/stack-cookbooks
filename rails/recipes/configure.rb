@@ -132,7 +132,7 @@ node[:deploy].each do |application, deploy|
       end
     end
 
-    node[:opsworks][:instance][:layers].include?('worker') # This is only for workers
+    if node[:opsworks][:instance][:layers].include?('worker') # This is only for workers
       file "#{deploy[:deploy_to]}/shared/keys/private.pem" do
         content deploy[:keys][:private]
         mode "0660"
