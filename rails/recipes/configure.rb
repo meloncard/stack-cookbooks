@@ -79,14 +79,11 @@ node[:deploy].each do |application, deploy|
     end
   end
 
-  redis_server = node[:opsworks][:layers][:redis][:instances].keys.first rescue nil
-  redis_client = nil
-
-  # Require a redis server or config
-  if redis_server
+  redis_client = deploy[:redis][:client]
+  
+  if redis_client.nil?
+    redis_server = node[:opsworks][:layers][:redis][:instances].keys.first rescue nil
     redis_client = node[:opsworks][:layers][:redis][:instances][redis_server][:private_dns_name]
-  else
-    redis_client = deploy[:redis][:client]
   end
 
   # Then redis.yml - HGH
