@@ -111,7 +111,7 @@ define :opsworks_deploy do
       after_restart do
         if deploy[:application_type] == 'rails'
           rails_env = new_resource.environment["RAILS_ENV"]
-          
+
           Chef::Log.info("Setting seeds assets for RAILS_ENV=#{rails_env}...")
           
           execute "rake smoke:update_sitemap" do
@@ -148,15 +148,6 @@ define :opsworks_deploy do
               :environment => node[:deploy][application][:rails_env]
             )
           end.run_action(:create)
-          
-          # Run db:seed, which is idempotent -HGH
-          Chef::Log.info("Setting seeds assets for RAILS_ENV=#{node[:deploy][application][:rails_env]}...")
-          
-          execute "rake db:seed" do
-            cwd release_path
-            command "bundle exec rake db:seed"
-            environment "RAILS_ENV" => node[:deploy][application][:rails_env]
-          end
         elsif deploy[:application_type] == 'php'
           template "#{node[:deploy][application][:deploy_to]}/shared/config/opsworks.php" do
             cookbook 'php'
