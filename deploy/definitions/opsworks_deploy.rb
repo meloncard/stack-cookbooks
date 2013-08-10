@@ -112,8 +112,16 @@ define :opsworks_deploy do
         if deploy[:application_type] == 'rails'
           rails_env = new_resource.environment["RAILS_ENV"]
 
-          Chef::Log.info("Setting seeds assets for RAILS_ENV=#{rails_env}...")
+          Chef::Log.info("Running db:seed for RAILS_ENV=#{rails_env}...")
           
+          execute "rake smoke:update_sitemap" do
+            cwd release_path
+            command "bundle exec rake db:seed"
+            environment "RAILS_ENV" => rails_env
+          end
+
+          Chef::Log.info("Running smoke:update_sitemap for RAILS_ENV=#{rails_env}...")
+
           execute "rake smoke:update_sitemap" do
             cwd release_path
             command "bundle exec rake smoke:update_sitemap"
