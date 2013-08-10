@@ -79,7 +79,7 @@ node[:deploy].each do |application, deploy|
     end
   end
 
-  redis_client = deploy[:redis][:client]
+  redis_client = deploy[:redis][:client] rescue nil
   
   if redis_client.nil?
     redis_server = node[:opsworks][:layers][:redis][:instances].keys.first rescue nil
