@@ -62,7 +62,7 @@ node[:deploy].each do |application, deploy|
   end
   
   # We're going to add a Merchant.yml config - HGH
-  if deploy['merchant'] && node[:opsworks][:instance][:layers].include?('rails') # This is only for Rails Servers
+  if deploy['merchant']
     template "#{deploy[:deploy_to]}/shared/config/merchant.yml" do
       source "merchant.yml.erb"
       cookbook 'rails'
