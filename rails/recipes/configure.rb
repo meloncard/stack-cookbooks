@@ -93,7 +93,7 @@ node[:deploy].each do |application, deploy|
     mode "0660"
     group deploy[:group]
     owner deploy[:user]
-    variables(:session => { :host => redis_client, :port => 6379 }, :environment => deploy[:rails_env])
+    variables(:session => { :host => redis_client }, :environment => deploy[:rails_env])
     
     notifies :run, "execute[restart Rails app #{application}]"
 

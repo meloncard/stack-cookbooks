@@ -1,9 +1,16 @@
 <%= @environment %>:
+  main:
+    host: <%= @session[:host] %>
+    port: 6379
+    db: 0
   session:
-    redis: true
-    client: <%= @session[:host] %>
-    port: <%= @session[:port] %>
+    host: <%= @session[:host] %>
+    port: 6379
+    db: 1
+    namespace: 'shadow:session'
   cache:
-    redis: false
-    client: 
-    port: 
+    host: <%= @session[:host] %>
+    port: 6379
+    db: 2
+    namespace: 'shadow:cache'
+    expires_in: 60
