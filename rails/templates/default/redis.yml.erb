@@ -5,12 +5,12 @@
     db: 0
   session:
     host: <%= @session[:host] %>
-    port: 6379
+    port: 6380
     db: 1
     namespace: 'shadow:session'
   cache:
     host: <%= @session[:host] %>
-    port: 6379
+    port: 6381
     db: 2
     namespace: 'shadow:cache'
     expires_in: 60
