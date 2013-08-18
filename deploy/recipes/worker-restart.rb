@@ -5,8 +5,14 @@
 include_recipe 'deploy'
 
 node[:deploy].each do |application, deploy|
-  service 'monit' do
-    supports :status => true, :restart => true, :reload => true
-    action :restart
+
+  execute "restart worker" do
+    command "monit restart worker"
+    action :run
+    
+    only_if do 
+      File.exists?("/etc/monit.d/worker.monitrc") # TODO: We can probably make this snazzier
+    end
   end
+
 end
