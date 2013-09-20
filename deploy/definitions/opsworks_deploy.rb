@@ -114,19 +114,12 @@ define :opsworks_deploy do
 
           Chef::Log.info("Running db:seed for RAILS_ENV=#{rails_env}...")
           
-          execute "rake smoke:update_sitemap" do
+          execute "rake db:seed" do
             cwd release_path
             command "bundle exec rake db:seed"
             environment "RAILS_ENV" => rails_env
           end
-
-          Chef::Log.info("Running smoke:update_sitemap for RAILS_ENV=#{rails_env}...")
-
-          execute "rake smoke:update_sitemap" do
-            cwd release_path
-            command "bundle exec rake smoke:update_sitemap"
-            environment "RAILS_ENV" => rails_env
-          end
+          
         end
       end
 
