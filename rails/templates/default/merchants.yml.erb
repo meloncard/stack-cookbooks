@@ -1,0 +1,9 @@
+<% (['development', 'production'] + [@environment]).uniq.each do |env| -%>
+<%= env %>:
+  <% @merchants.each do |merchant, merchant_info| %>
+    <%= merchant %>:
+      api_key: <%= merchant_info['api_key'] %>
+      publishable_key: <%= merchant_info['publishable_key'] %>
+  <% end %>
+
+<% end -%>

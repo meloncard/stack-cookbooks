@@ -64,7 +64,25 @@ node[:deploy].each do |application, deploy|
       mode "0660"
       group deploy[:group]
       owner deploy[:user]
-      variables(:merchant_api_key => deploy['merchant'], :environment => deploy[:rails_env])
+      variables(:merchants => deploy['merchant'], :environment => deploy[:rails_env])
+      
+      notifies :run, resources(:execute => "restart Rails app #{application}")
+
+      only_if do
+        File.exists?("#{deploy[:deploy_to]}") && File.exists?("#{deploy[:deploy_to]}/shared/config/")
+      end
+    end
+  end
+
+  # We're going to add a merchants.yml config - note the `s`
+  if deploy['merchants']
+    template "#{deploy[:deploy_to]}/shared/config/merchants.yml" do
+      source "merchants.yml.erb"
+      cookbook 'rails'
+      mode "0660"
+      group deploy[:group]
+      owner deploy[:user]
+      variables(:merchants => deploy['merchants'], :environment => deploy[:rails_env])
       
       notifies :run, resources(:execute => "restart Rails app #{application}")
 
