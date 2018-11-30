@@ -7,7 +7,7 @@
   username: <%= @database[:username].to_s.inspect %>
   password: <%= @database[:password].to_s.inspect %>
   reconnect: <%= @database[:reconnect] ? 'true' : 'false' %>
-  pool: 5
+  pool: 25 %>
   timeout: 5000
   
 <% end -%>
